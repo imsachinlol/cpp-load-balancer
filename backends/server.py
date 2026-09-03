@@ -8,6 +8,33 @@ class BackendHandler(BaseHTTPRequestHandler):
 
         backend_name = self.server.backend_name
 
+        # Health check endpoint
+        if self.path == "/health":
+
+            response = "OK\n"
+
+            self.send_response(200)
+
+            self.send_header(
+                "Content-Type",
+                "text/plain"
+            )
+
+            self.send_header(
+                "Content-Length",
+                str(len(response.encode()))
+            )
+
+            self.end_headers()
+
+            self.wfile.write(
+                response.encode()
+            )
+
+            return
+
+
+        # Normal request
         response = f"Hello from {backend_name}\n"
 
         self.send_response(200)
@@ -28,33 +55,44 @@ class BackendHandler(BaseHTTPRequestHandler):
             response.encode()
         )
 
+
     def log_message(self, format, *args):
+
         print(
-            f"[{self.server.backend_name}] {format % args}"
+            f"[{self.server.backend_name}] "
+            f"{format % args}"
         )
 
 
 def main():
 
     if len(sys.argv) != 3:
+
         print(
             "Usage: python3 server.py <port> <backend-name>"
         )
+
         sys.exit(1)
 
+
     port = int(sys.argv[1])
+
     backend_name = sys.argv[2]
+
 
     server = HTTPServer(
         ("localhost", port),
         BackendHandler
     )
 
+
     server.backend_name = backend_name
+
 
     print(
         f"{backend_name} listening on port {port}"
     )
+
 
     server.serve_forever()
 
